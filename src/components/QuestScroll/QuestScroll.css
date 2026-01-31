@@ -1,0 +1,308 @@
+/* ============================================
+   QUEST SCROLL - Enhanced Card Component
+   ============================================ */
+
+.quest-scroll {
+  position: relative;
+  background: linear-gradient(145deg, 
+    rgba(45, 45, 70, 0.95) 0%, 
+    rgba(30, 30, 50, 0.98) 100%
+  );
+  border: 2px solid rgba(255, 215, 0, 0.15);
+  border-left: 5px solid var(--category-color, #5b6ee1);
+  border-radius: 16px;
+  padding: var(--space-5);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Glow effect on hover */
+.quest-scroll::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at top left,
+    rgba(var(--category-color-rgb, 91, 110, 225), 0.1) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.quest-scroll:hover::before {
+  opacity: 1;
+}
+
+.quest-scroll:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(255, 215, 0, 0.3);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(var(--category-color-rgb, 91, 110, 225), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Completed state */
+.quest-scroll.completed {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+  transform: scale(0.98);
+}
+
+.quest-scroll.completed::after {
+  content: '✓ DONE';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  font-family: var(--font-pixel);
+  font-size: var(--text-2xl);
+  color: var(--color-xp-green);
+  text-shadow: 
+    2px 2px 0 rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(106, 190, 48, 0.5);
+  pointer-events: none;
+  z-index: 10;
+  letter-spacing: 4px;
+}
+
+/* Slash Animation */
+.slash-effect {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.9) 48%,
+    rgba(255, 215, 0, 1) 50%,
+    rgba(255, 255, 255, 0.9) 52%,
+    transparent 55%
+  );
+  animation: slash-sweep 0.4s ease-out forwards;
+  pointer-events: none;
+  z-index: 20;
+}
+
+@keyframes slash-sweep {
+  0% {
+    left: -100%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.quest-scroll.slashed {
+  animation: quest-shake 0.4s ease-out;
+}
+
+@keyframes quest-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-8px) rotate(-2deg); }
+  40% { transform: translateX(8px) rotate(2deg); }
+  60% { transform: translateX(-4px) rotate(-1deg); }
+  80% { transform: translateX(4px) rotate(1deg); }
+}
+
+/* Scroll Header */
+.scroll-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quest-category {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quest-title {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-parchment);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.quest-points {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+
+.quest-difficulty {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-2);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  flex-shrink: 0;
+  color: var(--color-parchment);
+}
+
+/* Subtasks */
+.quest-subtasks {
+  list-style: none;
+  margin-bottom: var(--space-3);
+}
+
+.quest-subtasks li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: var(--color-wood-dark);
+}
+
+.quest-subtasks li.done {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.subtask-check {
+  font-size: var(--text-sm);
+  color: var(--color-mana-blue);
+}
+
+.quest-subtasks li.done .subtask-check {
+  color: var(--color-xp-green);
+}
+
+/* Subtask Progress */
+.subtask-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.subtask-progress .progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--color-wood);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.subtask-progress .progress-bar-fill {
+  height: 100%;
+  background: var(--color-xp-green);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-wood);
+}
+
+/* Scroll Footer */
+.scroll-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-2);
+  border-top: 2px solid var(--color-parchment-dark);
+}
+
+.quest-rewards {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.reward {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.xp-reward {
+  color: var(--color-xp-green);
+}
+
+.gold-reward {
+  color: var(--color-gold-dark);
+}
+
+.quest-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.complete-btn,
+.delete-btn {
+  width: 36px;
+  height: 36px;
+  background: var(--color-wood);
+  border: 2px solid var(--color-wood-dark);
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.complete-btn:hover {
+  background: var(--color-xp-green);
+  transform: scale(1.1);
+}
+
+.delete-btn:hover {
+  background: var(--color-health-red);
+  transform: scale(1.1);
+}
+
+/* Left border accent based on category */
+.quest-scroll {
+  border-left: 6px solid var(--category-color);
+}
+
+.quest-points {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-2);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  flex-shrink: 0;
+}

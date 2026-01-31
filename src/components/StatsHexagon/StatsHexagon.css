@@ -1,0 +1,46 @@
+/* ============================================
+   STATS HEXAGON - SVG Radar Chart
+   ============================================ */
+
+.stats-hexagon {
+  overflow: visible;
+}
+
+.hexagon-grid {
+  fill: none;
+  stroke: var(--color-parchment);
+  stroke-width: 1;
+}
+
+.hexagon-axis {
+  stroke: var(--color-parchment);
+  stroke-width: 1;
+  stroke-opacity: 0.3;
+}
+
+.hexagon-border {
+  fill: none;
+  stroke: var(--color-mana-blue);
+  stroke-width: 2;
+  stroke-opacity: 0.5;
+}
+
+.hexagon-stats {
+  stroke: var(--color-mana-blue-light);
+  stroke-width: 2;
+  transition: d 0.5s ease-out;
+}
+
+.hexagon-point {
+  fill: var(--color-gold);
+  stroke: var(--color-parchment);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px var(--color-gold));
+}
+
+.hexagon-label {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  fill: var(--color-parchment);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}

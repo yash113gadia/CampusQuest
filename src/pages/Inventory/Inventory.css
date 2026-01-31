@@ -1,0 +1,422 @@
+/* ============================================
+   INVENTORY PAGE
+   ============================================ */
+
+.inventory-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-slate);
+}
+
+/* Header */
+.inventory-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 4px solid var(--color-wood);
+}
+
+.inventory-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inventory-header h1 {
+  font-family: var(--font-pixel);
+  font-size: var(--text-lg);
+  color: var(--color-gold);
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+.gold-display {
+  font-family: var(--font-pixel);
+  font-size: var(--text-sm);
+  color: var(--color-gold);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(244, 196, 48, 0.2);
+  border: 2px solid var(--color-gold);
+  border-radius: 4px;
+}
+
+/* Main Content */
+.inventory-main {
+  flex: 1;
+  padding: var(--space-6);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Sections */
+.inventory-section {
+  background: var(--color-dungeon-wall);
+  border: 4px solid var(--color-wood);
+  border-radius: 12px;
+  padding: var(--space-4);
+}
+
+.inventory-section h2 {
+  font-family: var(--font-pixel);
+  font-size: var(--text-base);
+  color: var(--color-parchment);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-wood);
+}
+
+/* Equipment Section */
+.equipment-section {
+  grid-column: 1 / -1;
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.equipment-slot {
+  background: rgba(0, 0, 0, 0.3);
+  border: 3px solid var(--color-wood);
+  border-radius: 8px;
+  padding: var(--space-3);
+  text-align: center;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.equipment-slot:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+}
+
+.slot-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.equipped-name {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--color-parchment);
+}
+
+.slot-name {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-parchment);
+  opacity: 0.7;
+  margin-bottom: var(--space-2);
+}
+
+.slot-content .empty {
+  opacity: 0.4;
+  font-style: italic;
+}
+
+/* Items Section */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.item-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: rgba(0, 0, 0, 0.3);
+  border: 3px solid var(--rarity-color, var(--color-wood));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.item-card.equipped {
+  border-color: var(--color-gold);
+  background: rgba(244, 196, 48, 0.1);
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.item-icon {
+  font-size: 1.5rem;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.item-icon .sprite-preview {
+  image-rendering: pixelated;
+}
+
+.item-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-name {
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  color: var(--rarity-color, var(--color-parchment));
+}
+
+.item-type {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-parchment);
+  opacity: 0.6;
+  text-transform: capitalize;
+}
+
+.item-quantity {
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  color: var(--color-gold);
+}
+
+.item-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-bonus {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--color-xp-green);
+}
+
+/* Equip Button */
+.equip-btn {
+  width: 100%;
+  padding: var(--space-2);
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  background: var(--color-wood);
+  border: 2px solid var(--color-gold);
+  border-radius: 4px;
+  color: var(--color-parchment);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.equip-btn:hover:not(:disabled) {
+  background: var(--color-gold);
+  color: var(--color-dungeon-wall);
+}
+
+.equip-btn.equipped {
+  background: rgba(34, 197, 94, 0.3);
+  border-color: var(--color-xp-green);
+  color: var(--color-xp-green);
+  cursor: default;
+}
+
+/* Empty State */
+.empty-message {
+  text-align: center;
+  padding: var(--space-6);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 2px dashed var(--color-wood);
+}
+
+.empty-message p {
+  font-family: var(--font-pixel);
+  font-size: var(--text-sm);
+  color: var(--color-parchment);
+  opacity: 0.7;
+  margin-bottom: var(--space-4);
+}
+
+.shop-link {
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  background: var(--color-gold);
+  border: none;
+  border-radius: 4px;
+  color: var(--color-dungeon-wall);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shop-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 196, 48, 0.3);
+}
+
+/* Achievements Section */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.achievement-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: rgba(0, 0, 0, 0.3);
+  border: 3px solid var(--color-wood);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.achievement-card.unlocked {
+  border-color: var(--color-gold);
+  background: rgba(244, 196, 48, 0.1);
+}
+
+.achievement-card.locked {
+  opacity: 0.6;
+}
+
+.achievement-card.locked .achievement-icon {
+  filter: grayscale(1);
+}
+
+.achievement-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievement-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.achievement-name {
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  color: var(--color-parchment);
+}
+
+.achievement-desc {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-parchment);
+  opacity: 0.7;
+}
+
+/* Stats Section */
+.stats-section {
+  grid-column: 1 / -1;
+}
+
+.stats-bars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.stat-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.stat-name {
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  color: var(--color-parchment);
+  width: 40px;
+}
+
+.stat-bar-container {
+  flex: 1;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--color-wood);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-xp-green), #7dd956);
+  transition: width 0.3s ease;
+}
+
+.stat-value {
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  color: var(--color-gold);
+  width: 24px;
+  text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .inventory-main {
+    grid-template-columns: 1fr;
+  }
+
+  .equipment-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-bars {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .inventory-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .inventory-info {
+    width: 100%;
+  }
+
+  .inventory-main {
+    padding: var(--space-4);
+  }
+
+  .items-grid,
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-bars {
+    grid-template-columns: 1fr;
+  }
+}

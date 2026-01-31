@@ -1,0 +1,394 @@
+/* ============================================
+   AVATAR STAGE - Layered Sprite Composition
+   ============================================ */
+
+/* CSS Variables for Avatar */
+:root {
+  --avatar-pixel-scale: 4;
+  --avatar-sprite-size: 32px;
+  --avatar-display-size: calc(var(--avatar-sprite-size) * var(--avatar-pixel-scale)); /* 128px */
+}
+
+/* Main Container */
+.avatar-stage-container {
+  --scale: var(--avatar-scale, 1);
+  position: relative;
+  width: calc(200px * var(--scale));
+  height: calc(200px * var(--scale));
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: visible;
+}
+
+/* The Platform/Ground */
+.pixel-platform {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 8px;
+  background: linear-gradient(to bottom, #4a4a54, #363640);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.platform-shadow {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+/* Character Wrapper - Contains all layers */
+.character-wrapper {
+  position: relative;
+  width: calc(var(--avatar-display-size) * var(--scale, 1));
+  height: calc(var(--avatar-display-size) * var(--scale, 1));
+  z-index: 1;
+}
+
+.character-wrapper.transitioning {
+  opacity: 0.9;
+}
+
+/* Common style for ALL sprite layers */
+.sprite-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
+  /* CRITICAL: Keeps pixels sharp, not blurry */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -webkit-image-rendering: pixelated;
+  
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 0 0;
+  
+  /* Hide broken images */
+  color: transparent;
+}
+
+/* Z-Index layering */
+.sprite-layer.skin { z-index: 1; }
+.sprite-layer.face { z-index: 2; }
+.sprite-layer.armor { z-index: 3; }
+.sprite-layer.hair { z-index: 4; }
+.sprite-layer.weapon { z-index: 5; }
+
+/* ============================================
+   PLACEHOLDER SPRITES (for demo without assets)
+   ============================================ */
+.placeholder-sprite {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.placeholder-body {
+  background: linear-gradient(to bottom, #f5d0a9 0%, #e8c090 100%);
+  clip-path: polygon(
+    35% 10%, 65% 10%, /* head top */
+    70% 25%, 70% 35%, /* head right */
+    75% 40%, 85% 50%, 85% 55%, 75% 55%, /* right arm */
+    70% 50%, 70% 85%, 75% 100%, /* right leg */
+    55% 100%, 55% 55%, /* torso right */
+    45% 55%, 45% 100%, /* torso left */
+    25% 100%, 30% 85%, 30% 50%, /* left leg */
+    25% 55%, 15% 55%, 15% 50%, 25% 40%, /* left arm */
+    30% 35%, 30% 25% /* head left */
+  );
+}
+
+.placeholder-face {
+  /* Eyes */
+  background: 
+    radial-gradient(circle at 42% 22%, #333 4px, transparent 4px),
+    radial-gradient(circle at 58% 22%, #333 4px, transparent 4px),
+    /* Mouth */
+    radial-gradient(ellipse at 50% 30%, transparent 3px, transparent 3px);
+}
+
+.placeholder-armor {
+  background: linear-gradient(135deg, #5b6ee1 0%, #3d4db7 100%);
+  clip-path: polygon(
+    40% 35%, 60% 35%, /* shoulders */
+    65% 40%, 70% 45%, 65% 50%, /* right shoulder */
+    65% 85%, 55% 85%, 55% 50%, /* right side */
+    45% 50%, 45% 85%, 35% 85%, /* left side */
+    35% 50%, 30% 45%, 35% 40% /* left shoulder */
+  );
+  opacity: 0.9;
+}
+
+.placeholder-hair {
+  background: linear-gradient(to bottom, #6d4e2a 0%, #4a3519 100%);
+  clip-path: polygon(
+    30% 15%, 35% 5%, 45% 8%, 55% 5%, 65% 8%, 70% 15%,
+    72% 20%, 70% 28%, 30% 28%, 28% 20%
+  );
+}
+
+.placeholder-weapon {
+  background: linear-gradient(to right, #8b6914 0%, #6d4e2a 50%, #4a3519 100%);
+  clip-path: polygon(
+    80% 35%, 85% 30%, 90% 35%, 90% 70%, 85% 75%, 80% 70%
+  );
+}
+
+/* ============================================
+   ANIMATIONS: IDLE
+   Subtle breathing/bobbing motion
+   ============================================ */
+@keyframes play-idle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-idle {
+  animation: play-idle 1.2s steps(2) infinite;
+}
+
+/* ============================================
+   ANIMATIONS: WALK
+   Bouncing walk cycle
+   ============================================ */
+@keyframes play-walk {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-4px) translateX(2px);
+  }
+  50% {
+    transform: translateY(0) translateX(0);
+  }
+  75% {
+    transform: translateY(-4px) translateX(-2px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+}
+
+.animate-walk {
+  animation: play-walk 0.4s steps(4) infinite;
+}
+
+/* ============================================
+   ANIMATIONS: ATTACK
+   Quick lunge forward
+   ============================================ */
+@keyframes play-attack {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-5px) rotate(-5deg);
+  }
+  50% {
+    transform: translateX(15px) rotate(5deg);
+  }
+  75% {
+    transform: translateX(5px) rotate(2deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+.animate-attack {
+  animation: play-attack 0.4s steps(4) forwards;
+}
+
+/* Weapon swings more during attack */
+.animate-attack .placeholder-weapon,
+.weapon.animate-attack {
+  animation: weapon-swing 0.4s steps(4) forwards;
+}
+
+@keyframes weapon-swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-30deg);
+  }
+  50% {
+    transform: rotate(45deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* ============================================
+   ANIMATIONS: HURT
+   Shake and flash red
+   ============================================ */
+@keyframes shake {
+  0% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  20% {
+    transform: translate(-6px, 0);
+    filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5);
+  }
+  40% {
+    transform: translate(6px, 0);
+    filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(3);
+  }
+  60% {
+    transform: translate(-4px, 0);
+    filter: brightness(1.2) sepia(0.5) hue-rotate(-50deg) saturate(2);
+  }
+  80% {
+    transform: translate(4px, 0);
+    filter: none;
+  }
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+}
+
+.shake-effect {
+  animation: shake 0.4s steps(4);
+}
+
+/* ============================================
+   ANIMATIONS: VICTORY
+   Jump and glow
+   ============================================ */
+@keyframes play-victory {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-20px) scale(1.1);
+  }
+  50% {
+    transform: translateY(-25px) scale(1.1);
+    filter: brightness(1.3);
+  }
+  75% {
+    transform: translateY(-15px) scale(1.05);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-victory {
+  animation: play-victory 0.8s steps(4) forwards;
+}
+
+/* Victory glow effect */
+.animate-victory::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  right: -20%;
+  bottom: -20%;
+  background: radial-gradient(circle, rgba(251, 242, 54, 0.3) 0%, transparent 70%);
+  animation: victory-glow 0.8s ease-out forwards;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes victory-glow {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* ============================================
+   ANIMATIONS: SIT
+   Crouch down (for campfire/rest)
+   ============================================ */
+@keyframes play-sit {
+  0% {
+    transform: translateY(0) scaleY(1);
+  }
+  100% {
+    transform: translateY(10px) scaleY(0.8);
+  }
+}
+
+.animate-sit {
+  animation: play-sit 0.3s steps(2) forwards;
+}
+
+/* ============================================
+   STATUS INDICATOR
+   ============================================ */
+.avatar-status-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(to right, transparent, rgba(91, 110, 225, 0.5), transparent);
+  border-radius: 2px;
+}
+
+.status-glow {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(91, 110, 225, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+  }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  :root {
+    --avatar-pixel-scale: 3;
+  }
+}

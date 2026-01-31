@@ -1,0 +1,352 @@
+/* ============================================
+   THE DUNGEON - Focus Timer & Progress Page
+   ============================================ */
+
+.dungeon-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-night-sky);
+}
+
+/* Header */
+.dungeon-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 4px solid var(--color-wood);
+  z-index: 10;
+}
+
+.dungeon-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dungeon-header h1 {
+  font-family: var(--font-pixel);
+  font-size: var(--text-lg);
+  color: var(--color-gold);
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+.streak-info {
+  font-family: var(--font-pixel);
+  font-size: var(--text-sm);
+  color: #ff6b35;
+  padding: var(--space-2) var(--space-4);
+  background: rgba(255, 107, 53, 0.2);
+  border: 2px solid #ff6b35;
+  border-radius: 4px;
+}
+
+/* Canvas Container */
+.dungeon-canvas-container {
+  flex: 1;
+  position: relative;
+  min-height: 400px;
+}
+
+.dungeon-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ============================================
+   TIMER OVERLAY - Center of screen
+   ============================================ */
+.timer-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  z-index: 10;
+  padding: var(--space-6);
+  background: rgba(0, 0, 0, 0.8);
+  border: 4px solid var(--color-wood);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  min-width: 280px;
+}
+
+/* Timer Display */
+.timer-display {
+  text-align: center;
+}
+
+.timer-time {
+  font-family: var(--font-pixel);
+  font-size: 3.5rem;
+  color: var(--color-parchment);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  letter-spacing: 4px;
+}
+
+.timer-display.running .timer-time {
+  color: var(--color-xp-green);
+  text-shadow: 0 0 30px rgba(91, 179, 24, 0.5);
+  animation: timer-pulse 2s ease-in-out infinite;
+}
+
+.timer-display.paused .timer-time {
+  color: var(--color-gold);
+}
+
+.timer-display.completed .timer-time {
+  color: var(--color-gold);
+  animation: timer-celebrate 0.5s ease infinite;
+}
+
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes timer-celebrate {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.timer-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-parchment);
+  opacity: 0.8;
+  margin-top: var(--space-2);
+}
+
+/* Timer Presets */
+.timer-presets {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.preset-btn {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-dungeon-wall);
+  border: 3px solid var(--color-wood);
+  border-radius: 8px;
+  font-family: var(--font-pixel);
+  font-size: var(--text-sm);
+  color: var(--color-parchment);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preset-btn:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+}
+
+.preset-btn.active {
+  background: var(--color-wood);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+/* Reward Preview */
+.reward-preview {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(91, 179, 24, 0.1);
+  border: 2px dashed var(--color-xp-green);
+  border-radius: 8px;
+}
+
+.reward-item {
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  color: var(--color-parchment);
+}
+
+/* Timer Controls */
+.timer-controls {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.timer-btn {
+  padding: var(--space-3) var(--space-6);
+  border: 4px solid;
+  border-radius: 8px;
+  font-family: var(--font-pixel);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timer-btn.start {
+  background: var(--color-xp-green);
+  border-color: #3a8018;
+  color: white;
+}
+
+.timer-btn.start:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(91, 179, 24, 0.5);
+}
+
+.timer-btn.pause {
+  background: var(--color-gold);
+  border-color: #c9a00c;
+  color: #333;
+}
+
+.timer-btn.resume {
+  background: var(--color-xp-green);
+  border-color: #3a8018;
+  color: white;
+}
+
+.timer-btn.reset {
+  background: var(--color-dungeon-wall);
+  border-color: var(--color-wood);
+  color: var(--color-parchment);
+}
+
+.timer-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Overlay Info */
+.dungeon-overlay {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 5;
+}
+
+.status-message {
+  background: rgba(0, 0, 0, 0.7);
+  border: 3px solid var(--color-wood);
+  border-radius: 8px;
+  padding: var(--space-4);
+  text-align: center;
+  min-width: 150px;
+}
+
+.status-message span {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.status-message p {
+  font-family: var(--font-pixel);
+  font-size: var(--text-xs);
+  color: var(--color-parchment);
+  margin-bottom: var(--space-1);
+}
+
+.status-message small {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-parchment);
+  opacity: 0.7;
+}
+
+.status-message.resting {
+  border-color: var(--color-mana-blue);
+}
+
+.status-message.running {
+  border-color: #ff6b35;
+  animation: pulse-border 1s ease infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 107, 53, 0.6);
+  }
+}
+
+/* Footer Stats */
+.dungeon-footer {
+  display: flex;
+  justify-content: space-around;
+  padding: var(--space-4) var(--space-6);
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 4px solid var(--color-wood);
+}
+
+.dungeon-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dungeon-stat .stat-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-parchment);
+  opacity: 0.7;
+}
+
+.dungeon-stat .stat-value {
+  font-family: var(--font-pixel);
+  font-size: var(--text-lg);
+  color: var(--color-gold);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .dungeon-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  .dungeon-info {
+    width: 100%;
+  }
+  
+  .dungeon-overlay {
+    top: auto;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    left: auto;
+  }
+  
+  .status-message {
+    width: auto;
+    min-width: 120px;
+  }
+
+  .timer-overlay {
+    padding: var(--space-4);
+    min-width: 250px;
+  }
+
+  .timer-time {
+    font-size: 2.5rem;
+  }
+
+  .timer-presets {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .timer-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .timer-btn {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-xs);
+  }
+}
