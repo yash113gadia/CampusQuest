@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../../context/GameContext';
 import QuestScroll from '../../components/QuestScroll/QuestScroll';
@@ -25,6 +25,85 @@ const QuestBoard: React.FC = () => {
   const [customTitle, setCustomTitle] = useState('');
   const [customPoints, setCustomPoints] = useState(5);
   const [customCategory, setCustomCategory] = useState<QuestCategory>('coding');
+  
+  // Stats panel state
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
+
+  // Get today's date string
+  const today = new Date().toISOString().split('T')[0];
+
+  // Calculate daily statistics
+  const dailyStats = useMemo(() => {
+    const todayQuests = quests.filter(q => 
+      q.isCompleted && q.completedAt?.startsWith(today)
+    );
+    
+    const totalXP = todayQuests.reduce((sum, q) => sum + q.rewards.xp, 0);
+    const totalGold = todayQuests.reduce((sum, q) => sum + q.rewards.gold, 0);
+    
+    // Category breakdown
+    const categoryBreakdown: Record<string, { count: number; xp: number }> = {};
+    todayQuests.forEach(q => {
+      const cat = q.category || 'daily';
+      if (!categoryBreakdown[cat]) {
+        categoryBreakdown[cat] = { count: 0, xp: 0 };
+      }
+      categoryBreakdown[cat].count++;
+      categoryBreakdown[cat].xp += q.rewards.xp;
+    });
+    
+    // Get top category
+    const topCategory = Object.entries(categoryBreakdown)
+      .sort((a, b) => b[1].xp - a[1].xp)[0];
+    
+    // Weekly stats (last 7 days)
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weeklyQuests = quests.filter(q => 
+      q.isCompleted && q.completedAt && new Date(q.completedAt) >= weekAgo
+    );
+    const weeklyXP = weeklyQuests.reduce((sum, q) => sum + q.rewards.xp, 0);
+    const avgDailyXP = Math.round(weeklyXP / 7);
+    
+    // Completion rate
+    const allTodayQuests = quests.filter(q => 
+      q.createdAt.startsWith(today) || (q.isCompleted && q.completedAt?.startsWith(today))
+    );
+    const completionRate = allTodayQuests.length > 0 
+      ? Math.round((todayQuests.length / allTodayQuests.length) * 100) 
+      : 0;
+    
+    // Best streak (consecutive days with quests completed)
+    const completedDates = [...new Set(
+      quests
+        .filter(q => q.isCompleted && q.completedAt)
+        .map(q => q.completedAt!.split('T')[0])
+    )].sort().reverse();
+    
+    let streak = 0;
+    const checkDate = new Date();
+    for (const date of completedDates) {
+      const dateStr = checkDate.toISOString().split('T')[0];
+      if (date === dateStr) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    
+    return {
+      todayCompleted: todayQuests.length,
+      totalXP,
+      totalGold,
+      categoryBreakdown,
+      topCategory,
+      weeklyXP,
+      avgDailyXP,
+      completionRate,
+      streak,
+    };
+  }, [quests, today]);
 
   // Calculate today's points
   const todayPoints = quests
@@ -132,8 +211,118 @@ const QuestBoard: React.FC = () => {
           >
             + Custom
           </button>
+          <button 
+            className={`add-quest-button stats-btn ${isStatsOpen ? 'active' : ''}`}
+            onClick={() => setIsStatsOpen(!isStatsOpen)}
+          >
+            📊 Stats
+          </button>
         </div>
       </header>
+
+      {/* Daily Stats Panel */}
+      {isStatsOpen && (
+        <div className="stats-panel">
+          <div className="stats-header">
+            <h2>📊 Daily Overview</h2>
+            <span className="stats-date">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+          </div>
+          
+          {/* Main Stats Grid */}
+          <div className="stats-grid">
+            <div className="stat-card primary">
+              <span className="stat-icon">⚔️</span>
+              <div className="stat-info">
+                <span className="stat-value">{dailyStats.todayCompleted}</span>
+                <span className="stat-label">Quests Done</span>
+              </div>
+            </div>
+            
+            <div className="stat-card xp">
+              <span className="stat-icon">✨</span>
+              <div className="stat-info">
+                <span className="stat-value">{dailyStats.totalXP}</span>
+                <span className="stat-label">XP Earned</span>
+              </div>
+            </div>
+            
+            <div className="stat-card gold">
+              <span className="stat-icon">💰</span>
+              <div className="stat-info">
+                <span className="stat-value">{dailyStats.totalGold}</span>
+                <span className="stat-label">Gold Earned</span>
+              </div>
+            </div>
+            
+            <div className="stat-card streak">
+              <span className="stat-icon">🔥</span>
+              <div className="stat-info">
+                <span className="stat-value">{dailyStats.streak}</span>
+                <span className="stat-label">Day Streak</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress & Category Section */}
+          <div className="stats-details">
+            {/* Completion Rate */}
+            <div className="stats-section">
+              <h3>📈 Today's Progress</h3>
+              <div className="progress-bar-container">
+                <div 
+                  className="progress-bar-fill" 
+                  style={{ width: `${Math.min(dailyStats.completionRate, 100)}%` }}
+                />
+                <span className="progress-text">{dailyStats.completionRate}% Complete</span>
+              </div>
+              <div className="progress-info">
+                <span>Avg Daily: {dailyStats.avgDailyXP} XP</span>
+                <span>Weekly: {dailyStats.weeklyXP} XP</span>
+              </div>
+            </div>
+
+            {/* Category Breakdown */}
+            <div className="stats-section">
+              <h3>🏷️ Category Breakdown</h3>
+              <div className="category-breakdown">
+                {Object.entries(dailyStats.categoryBreakdown).length > 0 ? (
+                  Object.entries(dailyStats.categoryBreakdown).map(([cat, data]) => {
+                    const categoryInfo = CATEGORIES[cat as QuestCategory] || { icon: '📋', label: cat, color: '#666' };
+                    return (
+                      <div key={cat} className="category-stat" style={{ '--cat-color': categoryInfo.color } as React.CSSProperties}>
+                        <span className="cat-icon">{categoryInfo.icon}</span>
+                        <span className="cat-name">{categoryInfo.label}</span>
+                        <span className="cat-count">{data.count} quests</span>
+                        <span className="cat-xp">+{data.xp} XP</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="empty-categories">No quests completed yet today!</div>
+                )}
+              </div>
+            </div>
+
+            {/* Top Focus */}
+            {dailyStats.topCategory && (
+              <div className="stats-section highlight">
+                <h3>🎯 Today's Focus</h3>
+                <div className="top-category">
+                  <span className="top-icon">
+                    {CATEGORIES[dailyStats.topCategory[0] as QuestCategory]?.icon || '📋'}
+                  </span>
+                  <span className="top-label">
+                    {CATEGORIES[dailyStats.topCategory[0] as QuestCategory]?.label || dailyStats.topCategory[0]}
+                  </span>
+                  <span className="top-value">
+                    {dailyStats.topCategory[1].xp} XP from {dailyStats.topCategory[1].count} quests
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Template Picker Modal */}
       {isTemplatePickerOpen && (
