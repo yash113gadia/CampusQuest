@@ -92,6 +92,41 @@ const QuestBoard: React.FC = () => {
       }
     }
     
+    // Weekly chart data (last 7 days)
+    const weeklyChartData: { day: string; xp: number; quests: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      
+      const dayQuests = quests.filter(q => 
+        q.isCompleted && q.completedAt?.startsWith(dateStr)
+      );
+      const dayXP = dayQuests.reduce((sum, q) => sum + q.rewards.xp, 0);
+      
+      weeklyChartData.push({
+        day: dayName,
+        xp: dayXP,
+        quests: dayQuests.length,
+      });
+    }
+    
+    // Calculate max XP for chart scaling
+    const maxDayXP = Math.max(...weeklyChartData.map(d => d.xp), 1);
+    
+    // Category chart data (for pie chart)
+    const totalCategoryXP = Object.values(categoryBreakdown).reduce((sum, c) => sum + c.xp, 0) || 1;
+    const categoryChartData = Object.entries(categoryBreakdown).map(([cat, data]) => ({
+      category: cat,
+      xp: data.xp,
+      count: data.count,
+      percentage: Math.round((data.xp / totalCategoryXP) * 100),
+      color: CATEGORIES[cat as QuestCategory]?.color || '#666',
+      icon: CATEGORIES[cat as QuestCategory]?.icon || '📋',
+      label: CATEGORIES[cat as QuestCategory]?.label || cat,
+    }));
+    
     return {
       todayCompleted: todayQuests.length,
       totalXP,
@@ -102,6 +137,9 @@ const QuestBoard: React.FC = () => {
       avgDailyXP,
       completionRate,
       streak,
+      weeklyChartData,
+      maxDayXP,
+      categoryChartData,
     };
   }, [quests, today]);
 
@@ -320,6 +358,77 @@ const QuestBoard: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Charts Section */}
+          <div className="charts-section">
+            {/* Weekly Activity Bar Chart */}
+            <div className="chart-container">
+              <h3>📊 Weekly Activity</h3>
+              <div className="bar-chart">
+                {dailyStats.weeklyChartData.map((day, index) => (
+                  <div key={index} className="bar-column">
+                    <div className="bar-value">{day.xp > 0 ? day.xp : ''}</div>
+                    <div 
+                      className="bar" 
+                      style={{ 
+                        height: `${(day.xp / dailyStats.maxDayXP) * 100}%`,
+                        background: index === 6 ? 'var(--color-gold)' : 'var(--color-primary)'
+                      }}
+                    >
+                      {day.quests > 0 && <span className="bar-quests">{day.quests}</span>}
+                    </div>
+                    <div className={`bar-label ${index === 6 ? 'today' : ''}`}>{day.day}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="chart-legend">
+                <span>📋 Number inside bar = quests completed</span>
+              </div>
+            </div>
+
+            {/* Category Distribution Chart */}
+            <div className="chart-container">
+              <h3>🎨 Category Distribution</h3>
+              {dailyStats.categoryChartData.length > 0 ? (
+                <>
+                  <div className="donut-chart-container">
+                    <div 
+                      className="donut-chart"
+                      style={{
+                        background: dailyStats.categoryChartData.length === 1
+                          ? dailyStats.categoryChartData[0].color
+                          : `conic-gradient(${dailyStats.categoryChartData.map((cat, i) => {
+                              const startPercent = dailyStats.categoryChartData.slice(0, i).reduce((sum, c) => sum + c.percentage, 0);
+                              const endPercent = startPercent + cat.percentage;
+                              return `${cat.color} ${startPercent}% ${endPercent}%`;
+                            }).join(', ')})`
+                      }}
+                    >
+                      <div className="donut-hole">
+                        <span className="donut-total">{dailyStats.totalXP}</span>
+                        <span className="donut-label">Total XP</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="chart-legend-items">
+                    {dailyStats.categoryChartData.map((cat) => (
+                      <div key={cat.category} className="legend-item">
+                        <span className="legend-color" style={{ background: cat.color }}></span>
+                        <span className="legend-icon">{cat.icon}</span>
+                        <span className="legend-name">{cat.label}</span>
+                        <span className="legend-percent">{cat.percentage}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="empty-chart">
+                  <span className="empty-icon">📊</span>
+                  <p>Complete quests to see your category distribution!</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
