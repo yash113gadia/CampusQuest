@@ -73,6 +73,7 @@ interface GameState {
   userId: string | null;
   isLoading: boolean;
   isSyncing: boolean;
+  hasLoadedData: boolean; // Tracks if initial data load attempt has completed
 }
 
 const initialState: GameState = {
@@ -86,6 +87,7 @@ const initialState: GameState = {
   userId: null,
   isLoading: false,
   isSyncing: false,
+  hasLoadedData: false,
 };
 
 // ============================================
@@ -122,6 +124,7 @@ type GameAction =
   | { type: 'SET_CURRENT_GUILD'; payload: Guild | null }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_SYNCING'; payload: boolean }
+  | { type: 'SET_HAS_LOADED'; payload: boolean }
   | { type: 'RESET_STATE' };
 
 // ============================================
@@ -590,6 +593,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         quests,
         isCharacterCreated: !!character.name,
         isLoading: false,
+        hasLoadedData: true,
       };
     }
 
@@ -621,10 +625,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'SET_HAS_LOADED': {
+      return {
+        ...state,
+        hasLoadedData: action.payload,
+      };
+    }
+
     case 'RESET_STATE': {
       return {
         ...initialState,
         isLoading: false,
+        hasLoadedData: false,
       };
     }
 
@@ -672,12 +684,22 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Load user data from Firestore
         const userDoc = await getDoc(doc(db, 'users', userId));
         
+        console.log('Loading user data for:', userId);
+        console.log('Document exists:', userDoc.exists());
+        
         if (userDoc.exists()) {
           const data = userDoc.data();
+          console.log('Loaded data:', data);
+          
+          // Only use loaded character if it has a name (was properly created)
+          const loadedCharacter = data.character && data.character.name 
+            ? data.character 
+            : createInitialCharacter();
+          
           dispatch({
             type: 'LOAD_USER_DATA',
             payload: {
-              character: data.character || createInitialCharacter(),
+              character: loadedCharacter,
               quests: data.quests || [],
               currentGuildId: data.currentGuildId || null,
             },
@@ -691,7 +713,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
           }
         } else {
-          // New user - create document
+          // New user - no document exists yet, mark as loaded
+          console.log('New user - no existing data');
+          dispatch({ type: 'SET_HAS_LOADED', payload: true });
           dispatch({ type: 'SET_LOADING', payload: false });
         }
         
@@ -702,6 +726,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
       } catch (error) {
         console.error('Error loading user data:', error);
+        dispatch({ type: 'SET_HAS_LOADED', payload: true }); // Mark as loaded even on error
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
       }

@@ -96,7 +96,10 @@ const Login: React.FC = () => {
 
   // Switch to character creation if logged in but no character
   React.useEffect(() => {
-    if (user && !state.isLoading && !state.isCharacterCreated) {
+    // Wait until data has actually been loaded before making decisions
+    if (!state.hasLoadedData) return;
+    
+    if (user && !state.isCharacterCreated) {
       setAuthMode('character');
       // Pre-fill name from Google account if available
       if (user.displayName && !name) {
@@ -105,7 +108,7 @@ const Login: React.FC = () => {
     } else if (user && state.isCharacterCreated) {
       navigate('/dashboard');
     }
-  }, [user, state.isLoading, state.isCharacterCreated, navigate, name]);
+  }, [user, state.hasLoadedData, state.isCharacterCreated, navigate, name]);
 
   // Handle email login
   const handleLogin = async (e: React.FormEvent) => {
